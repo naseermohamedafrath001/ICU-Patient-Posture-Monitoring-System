@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThermalVision AI - ICU Patient Monitoring</title>
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="assets/img/logo.png">
+</head>
+
+<body>
+    <div class="container">
+        <!-- Header with Navigation -->
+        <div class="header">
+            <div class="nav-container">
+                <div class="logo">
+                    <img src="assets/img/logo.png" alt="Logo" class="logo-icon" style="width: 40px; height: 40px;">
+                    <div>
+                        <h1>ThermalVision AI</h1>
+                        <p class="subtitle">ICU Patient Posture Monitoring System</p>
+                    </div>
+                </div>
+                <div class="nav-tabs">
+                    <div class="nav-tab" data-page="analysis">
+                        <i class="fas fa-brain"></i> AI Analysis
+                    </div>
+                    <div class="nav-tab" data-page="history">
+                        <i class="fas fa-history"></i> Alert History
+                    </div>
+                    <div class="nav-tab" data-page="guidance">
+                        <i class="fas fa-book-medical"></i> Medical Guidance
+                    </div>
+                    <div class="nav-tab admin-only" data-page="nurses" style="display: none;">
+                        <i class="fas fa-user-nurse"></i> Nurse Management
+                    </div>
+                    <div class="nav-tab admin-only" data-page="doctors" style="display: none;">
+                        <i class="fas fa-user-md"></i> Doctor Management
+                    </div>
+                    <div class="nav-tab admin-only" data-page="patients" style="display: none;">
+                        <i class="fas fa-procedures"></i> Patient Management
+                    </div>
+                    <div class="nav-tab" id="logoutBtn" style="display: none;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div class="page active" id="login-page">
+            <div class="content">
+                <div class="login-container">
+                    <div class="login-card">
+                        <div class="login-header">
+                            <img src="assets/img/logo.png" alt="Logo" class="logo-icon"
+                                style="width: 60px; height: 60px; margin-bottom: 1rem;">
+                            <h2>ThermalVision AI</h2>
+                            <p>Secure ICU Access Portal</p>
+                        </div>
+
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label for="username"><i class="fas fa-user"></i> Username</label>
+                                <input type="text" id="username" name="username" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password"><i class="fas fa-lock"></i> Password</label>
+                                <input type="password" id="password" name="password" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="role"><i class="fas fa-user-tag"></i> Role</label>
+                                <select id="role" name="role" required>
+                                    <option value="">Select Role</option>
+                                    <option value="admin">Administrator</option>
+                                    <option value="user">Nurse/User</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary login-btn">
+                                <i class="fas fa-sign-in-alt"></i> Login
+                            </button>
+                        </form>
+
+                        <div class="login-footer">
+                            <p>Default Credentials:</p>
+                            <p>Admin: admin / admin123</p>
+                            <p>User: nurse / nurse123</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Page -->
+        <div class="page" id="analysis-page">
+            <div class="content">
+                <div class="upload-section">
+                    <div class="upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <p class="upload-text">Upload Thermal Image or Video</p>
+                        <p class="file-info">Drag & drop or click to browse files</p>
+                        <p class="file-info">Supported formats: MP4, AVI, MOV, PNG, JPG, JPEG</p>
+                        <input type="file" id="fileInput" accept="video/*,image/*" style="display: none;">
+                    </div>
+
+                    <div class="preview-container">
+                        <div class="preview-box video-preview" id="videoPreview">
+                            <div class="preview-header">
+                                <i class="fas fa-video"></i>
+                                Video Preview
+                            </div>
+                            <div class="preview-content">
+                                <video id="previewPlayer" controls></video>
+                            </div>
+                        </div>
+
+                        <div class="preview-box image-preview" id="imagePreview">
+                            <div class="preview-header">
+                                <i class="fas fa-image"></i>
+                                Image Preview
+                            </div>
+                            <div class="preview-content">
+                                <img id="previewImage" src="" alt="Preview">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-section">
+                    <button class="btn btn-primary" id="predictBtn" disabled>
+                        <i class="fas fa-brain"></i>
+                        Analyze Position
+                    </button>
+                </div>
+
+                <div class="status-section">
+                    <div class="loading" id="loadingIndicator">
+                        <div class="spinner"></div>
+                        <p>Processing thermal data and analyzing body position...</p>
+                        <div class="frame-progress" id="frameProgress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressFill"></div>
+                            </div>
+                            <div class="progress-text" id="progressText">Processing frame 0/0</div>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-success" id="successMessage">
+                        <i class="fas fa-check-circle"></i>
+                        <span>Analysis completed successfully!</span>
+                    </div>
+
+                    <div class="alert alert-error" id="errorContainer">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>Error message will appear here</span>
+                    </div>
+                </div>
+
+                <div class="result-section" id="resultContainer">
+                    <div class="result-card">
+                        <div class="result-header">
+                            <h3><i class="fas fa-chart-bar"></i> Analysis Results</h3>
+                        </div>
+                        <div class="result-content">
+                            <div class="prediction-main">
+                                <p>Detected Body Position:</p>
+                                <div class="prediction-value" id="predictionValue">Unknown</div>
+                                <div class="confidence-badge" id="confidenceValue">Confidence: 0%</div>
+                                <div class="frame-analysis-alert" id="frameAnalysisAlert">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <span id="frameAlertText">Frame analysis pending</span>
+                                </div>
+                            </div>
+
+                            <div class="frame-analysis-section" id="frameAnalysisSection">
+                                <h4><i class="fas fa-film"></i> Frame-by-Frame Analysis</h4>
+                                <div class="frame-results" id="frameResults">
+                                    <!-- Frame results will be populated here -->
+                                </div>
+                            </div>
+
+                            <div class="probability-chart" id="probabilityChart">
+                                <h4><i class="fas fa-chart-pie"></i> Position Probabilities</h4>
+                                <div id="probabilityBars"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Agent Section -->
+                <div class="agent-section" id="agentContainer">
+                    <div class="agent-card">
+                        <div class="agent-header">
+                            <h3><i class="fas fa-robot"></i> AI Nurse Assistant</h3>
+                        </div>
+                        <div class="agent-content">
+                            <div class="agent-thinking" id="agentThinking">
+                                <p><i class="fas fa-brain"></i> Analyzing patient position and generating nursing
+                                    recommendations...</p>
+                                <div class="thinking-dots">
+                                    <div class="thinking-dot"></div>
+                                    <div class="thinking-dot"></div>
+                                    <div class="thinking-dot"></div>
+                                </div>
+                            </div>
+
+                            <div class="agent-message" id="agentMessage">
+                                <!-- AI message will be generated here -->
+                            </div>
+
+                            <div class="primary-suggestion" id="primarySuggestion">
+                                <!-- Single most important suggestion will appear here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert History Page -->
+        <div class="page" id="history-page">
+            <div class="content">
+                <div class="history-header">
+                    <h2><i class="fas fa-history"></i> Alert History & Patient Records</h2>
+                    <div class="history-controls">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="historySearch" placeholder="Search patients, positions...">
+                        </div>
+                        <button class="btn btn-secondary" id="exportHistoryBtn">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button class="btn btn-danger admin-only" id="clearHistoryBtn" style="display: none;">
+                            <i class="fas fa-trash"></i> Clear All
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-stats">
+                    <div class="stat-card">
+                        <div class="stat-icon total-alerts">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalAlerts">0</h3>
+                            <p>Total Records</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon critical-alerts">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="criticalAlerts">0</h3>
+                            <p>Critical Alerts</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon patients-monitored">
+                            <i class="fas fa-procedures"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="patientsMonitored">0</h3>
+                            <p>Patients Monitored</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="history-filters">
+                    <div class="filter-group">
+                        <label>Filter by:</label>
+                        <select id="timeFilter">
+                            <option value="all">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="week">This Week</option>
+                            <option value="month">This Month</option>
+                        </select>
+                        <select id="alertTypeFilter">
+                            <option value="all">All Types</option>
+                            <option value="critical">Critical Alerts</option>
+                            <option value="warning">Low Confidence</option>
+                        </select>
+                        <select id="positionFilter">
+                            <option value="all">All Positions</option>
+                            <option value="supine">Supine</option>
+                            <option value="left">Left Lateral</option>
+                            <option value="right">Right Lateral</option>
+                        </select>
+                        <button class="btn btn-secondary" onclick="app.clearFilters()">
+                            <i class="fas fa-times"></i> Clear Filters
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Position</th>
+                                <th>Alert Type</th>
+                                <th>Duration</th>
+                                <th>Date & Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody">
+                            <!-- History records will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="no-history" id="noHistoryMessage">
+                    <i class="fas fa-history"></i>
+                    <h3>No Alert History</h3>
+                    <p>Patient alerts and posture analysis history will appear here.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guidance Page -->
+        <div class="page" id="guidance-page">
+            <div class="content">
+                <div class="guidance-hero">
+                    <h2><i class="fas fa-book-medical"></i> Pressure Injury Prevention Guide</h2>
+                    <p>Comprehensive medical guidance for optimal patient positioning and bedsore prevention</p>
+                </div>
+
+                <div class="guidance-grid">
+                    <div class="guidance-card">
+                        <h3><i class="fas fa-bed"></i> Optimal Positioning</h3>
+                        <ul>
+                            <li><i class="fas fa-check-circle"></i> Reposition every 2 hours for bedridden patients</li>
+                            <li><i class="fas fa-check-circle"></i> Use 30-degree lateral tilt for side-lying positions
+                            </li>
+                            <li><i class="fas fa-check-circle"></i> Keep heels floating with pillow support</li>
+                            <li><i class="fas fa-check-circle"></i> Maintain natural body alignment</li>
+                            <li><i class="fas fa-check-circle"></i> Use pressure-relieving devices when indicated</li>
+                        </ul>
+                    </div>
+
+                    <div class="guidance-card">
+                        <h3><i class="fas fa-shield-alt"></i> Risk Assessment</h3>
+                        <ul>
+                            <li><i class="fas fa-check-circle"></i> Use Braden Scale for pressure injury risk</li>
+                            <li><i class="fas fa-check-circle"></i> Assess skin integrity during position changes</li>
+                            <li><i class="fas fa-check-circle"></i> Monitor moisture and nutrition status</li>
+                            <li><i class="fas fa-check-circle"></i> Document all skin assessments</li>
+                            <li><i class="fas fa-check-circle"></i> Consider mobility and sensory perception</li>
+                        </ul>
+                    </div>
+
+                    <div class="guidance-card">
+                        <h3><i class="fas fa-stethoscope"></i> Skin Inspection</h3>
+                        <ul>
+                            <li><i class="fas fa-check-circle"></i> Check bony prominences daily</li>
+                            <li><i class="fas fa-check-circle"></i> Look for redness that doesn't blanch</li>
+                            <li><i class="fas fa-check-circle"></i> Monitor temperature changes</li>
+                            <li><i class="fas fa-check-circle"></i> Assess for skin breakdown or blisters</li>
+                            <li><i class="fas fa-check-circle"></i> Document any changes immediately</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nurse Management Page -->
+        <div class="page" id="nurses-page">
+            <div class="content">
+                <div class="history-header">
+                    <h2><i class="fas fa-user-nurse"></i> Nurse Management</h2>
+                </div>
+
+                <div class="history-filters" style="margin-top: 20px;">
+                    <div class="filter-group">
+                        <label>Add New Nurse:</label>
+                        <input type="text" id="newNurseName" placeholder="Full Name"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="text" id="newNurseUsername" placeholder="Username"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="password" id="newNursePassword" placeholder="Password"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <select id="newNurseRole" style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                            <option value="user">Nurse</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                        <input type="text" id="newNursePhone" placeholder="Phone Number"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="text" id="newNurseID" placeholder="Nurse ID"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="date" id="newNurseJoinedDate"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="text" id="newNurseAddress" placeholder="Address"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd; flex-grow: 1;">
+                        <button class="btn btn-primary" id="addNurseBtn">
+                            <i class="fas fa-plus"></i> Add Nurse
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-table-container" style="margin-top: 20px;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="nurseTableBody">
+                            <!-- Nurse records will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Doctor Management Page -->
+        <div class="page" id="doctors-page">
+            <div class="content">
+                <div class="history-header">
+                    <h2><i class="fas fa-user-md"></i> Doctor Management</h2>
+                </div>
+
+                <div class="history-filters" style="margin-top: 20px;">
+                    <div class="filter-group">
+                        <label>Add New Doctor:</label>
+                        <input type="text" id="newDoctorID" placeholder="Doctor ID"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="text" id="newDoctorName" placeholder="Full Name"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="text" id="newDoctorPosition" placeholder="Position"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="text" id="newDoctorSpecialty" placeholder="Specialty"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="text" id="newDoctorDutyTime" placeholder="Duty Time"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="text" id="newDoctorContact" placeholder="Contact"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <input type="date" id="newDoctorJoinedDate"
+                            style="padding: 8px; border-radius: 4px; border: 1px solid #ddd;">
+                        <button class="btn btn-primary" id="addDoctorBtn">
+                            <i class="fas fa-plus"></i> Add Doctor
+                        </button>
+                    </div>
+                </div>
+
+                <div class="history-table-container" style="margin-top: 20px;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Position</th>
+                                <th>Specialty</th>
+                                <th>Duty Time</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doctorTableBody">
+                            <!-- Doctor records will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Management Page -->
+        <div class="page" id="patients-page">
+            <div class="content">
+                <div class="history-header">
+                    <h2><i class="fas fa-procedures"></i> Patient Management</h2>
+                </div>
+
+                <div class="history-stats" style="margin-bottom: 2rem;">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(37, 99, 235, 0.1); color: var(--primary);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3 id="totalPatientsCount">0</h3>
+                            <p>Total Patients</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="history-filters">
+                    <div class="filter-group">
+                        <label><i class="fas fa-plus-circle"></i> Add Patient:</label>
+                        <button class="btn btn-primary" id="openAddPatientModalBtn">
+                            <i class="fas fa-user-plus"></i> New Patient
+                        </button>
+                        <div class="search-box" style="margin-left: auto;">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="patientSearch" placeholder="Search patients...">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Age</th>
+                                <th>Room/Bed</th>
+                                <th>Condition</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="patientManagementTableBody">
+                            <!-- Patient records will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patient Details Modal -->
+        <div class="modal" id="patientModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-injured"></i> Patient Information</h3>
+                    <span class="close">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="patientForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patientName">Full Name *</label>
+                                <input type="text" id="patientName" name="patientName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientAge">Age *</label>
+                                <input type="number" id="patientAge" name="patientAge" required min="1" max="120">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="patientId">Patient ID *</label>
+                                <input type="text" id="patientId" name="patientId" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="patientRoom">Room/Bed Number</label>
+                                <input type="text" id="patientRoom" name="patientRoom">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="patientCondition">Medical Condition</label>
+                            <textarea id="patientCondition" name="patientCondition" rows="3"></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" id="cancelPatientBtn">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save & Continue Analysis</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Nurse Modal -->
+        <div class="modal" id="editNurseModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-edit"></i> Edit Nurse Details</h3>
+                    <span class="close" onclick="app.closeEditNurseModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="editNurseForm">
+                        <input type="hidden" id="editNurseUsername">
+                        <div class="form-group">
+                            <label for="editNurseName">Full Name *</label>
+                            <input type="text" id="editNurseName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editNurseRole">Role *</label>
+                            <select id="editNurseRole" required>
+                                <option value="user">Nurse</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editNursePassword">New Password (leave blank to keep current)</label>
+                            <input type="password" id="editNursePassword" placeholder="Enter new password">
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editNursePhone">Phone Number</label>
+                                <input type="text" id="editNursePhone">
+                            </div>
+                            <div class="form-group">
+                                <label for="editNurseID">Nurse ID</label>
+                                <input type="text" id="editNurseID">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editNurseJoinedDate">Joined Date</label>
+                            <input type="date" id="editNurseJoinedDate">
+                        </div>
+                        <div class="form-group">
+                            <label for="editNurseAddress">Address</label>
+                            <textarea id="editNurseAddress" rows="2"></textarea>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                onclick="app.closeEditNurseModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Doctor Modal -->
+        <div class="modal" id="editDoctorModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-user-edit"></i> Edit Doctor Details</h3>
+                    <span class="close" onclick="app.closeEditDoctorModal()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <form id="editDoctorForm">
+                        <input type="hidden" id="editDoctorID">
+                        <div class="form-group">
+                            <label for="editDoctorName">Full Name *</label>
+                            <input type="text" id="editDoctorName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDoctorPosition">Position *</label>
+                            <input type="text" id="editDoctorPosition" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDoctorSpecialty">Specialty *</label>
+                            <input type="text" id="editDoctorSpecialty" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="editDoctorDutyTime">Duty Time</label>
+                                <input type="text" id="editDoctorDutyTime">
+                            </div>
+                            <div class="form-group">
+                                <label for="editDoctorContact">Contact</label>
+                                <input type="text" id="editDoctorContact">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editDoctorJoinedDate">Joined Date</label>
+                            <input type="date" id="editDoctorJoinedDate">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary"
+                                onclick="app.closeEditDoctorModal()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alert Popup -->
+        <div class="alert-popup" id="alertPopup">
+            <div class="alert-popup-content">
+                <div class="alert-header critical">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>CRITICAL ALERT</h3>
+                    <button class="close-alert" id="closeAlert">&times;</button>
+                </div>
+                <div class="alert-body">
+                    <div class="alert-message">
+                        <p><strong>Prolonged Static Position Detected!</strong></p>
+                        <p id="alertDetails">Patient has maintained the same position for extended period</p>
+                    </div>
+                    <div class="patient-info-alert">
+                        <div class="patient-detail">
+                            <span class="label">Patient:</span>
+                            <span id="alertPatientName">-</span>
+                        </div>
+                        <div class="patient-detail">
+                            <span class="label">Position:</span>
+                            <span id="alertPosition">-</span>
+                        </div>
+                        <div class="patient-detail">
+                            <span class="label">Duration:</span>
+                            <span id="alertDuration">-</span>
+                        </div>
+                    </div>
+                    <div class="alert-actions">
+                        <button class="btn btn-primary" id="acknowledgeAlert">
+                            <i class="fas fa-check"></i> Acknowledge & Log
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Alert Sound -->
+        <audio id="alertSound" preload="auto" crossorigin="anonymous">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3"
+                type="audio/mpeg">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-classic-alarm-995.mp3" type="audio/mpeg">
+            <source src="https://assets.mixkit.co/sfx/preview/mixkit-hard-pop-alert-notification-812.mp3"
+                type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+
+        <div class="footer">
+            <p>ThermalVision AI ICU Monitoring System | FYP 2025/2026</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="script.js"></script>
+    <script src="interval-processing-utf8.js"></script> <!-- ADD THIS LINE -->
+</body>
+
+</html>
