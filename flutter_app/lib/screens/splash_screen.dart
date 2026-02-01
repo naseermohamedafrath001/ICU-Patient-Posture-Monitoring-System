@@ -231,6 +231,31 @@ class _SplashScreenState extends State<SplashScreen> with TickerProviderStateMix
                 },
               ),
             ),
+          
+          // Settings Icon (Backend Config) - Moved to top of stack
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 12,
+            right: 16,
+            child: Container(
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: IconButton(
+                icon: const Icon(
+                  Icons.settings_suggest_rounded,
+                  color: Colors.white,
+                  size: 26,
+                ),
+                tooltip: 'Backend Configuration',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                  );
+                },
+              ),
+            ),
+          ),
         ],
       ),
     );

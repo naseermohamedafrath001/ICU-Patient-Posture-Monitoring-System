@@ -4,7 +4,7 @@ class ThermalVisionApp {
         this.currentUser = null;
         this.currentPatient = null;
         this.selectedFile = null;
-        this.API_BASE = 'http://localhost:5000';
+        this.API_BASE = window.location.origin.includes('localhost') ? 'http://localhost:5000' : window.location.origin;
 
         this.USER_ROLES = {
             ADMIN: 'admin',
