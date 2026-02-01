@@ -68,6 +68,34 @@ flutter pub get
 flutter run
 ```
 
+### Guild for View
+--------------
+
+First, Backend connection:
+
+	1. download the project file : https://github.com/naseermohamedafrath001/ICU-Patient-Posture-Monitoring-App-TAi-
+	2. in the vs code terminal, run
+		# Install dependencies
+		pip install -r Requirments.txt
+
+		# Start the Flask server
+		python app.py
+	3. if connected, u can see like below,
+		* Debugger is active!
+ 		* Debugger PIN: 628-025-778	
+
+Next App connection:
+
+	1. install "ICU App.apk" on ur mobile phone.
+	2. open app, in the login page u can see setting icon on the corner, click that and past "http://<your ip address>:Port" this url
+	3. to get url,
+		a. open windows terminal
+		b. search "ipconfig"
+		c. it will show ur ipv4 address like "eg:- 172.56.66.78"
+		d. copy and past it on ur "your ip address"
+
+** use same wifi connection both mobile and ur pc
+
 ## 📖 How to Use
 
 1. **Login**: Use the designated nurse or admin credentials.
